@@ -3,7 +3,7 @@ const express = require("express")
 const app = express()
 require("dotenv").config()
 require("./src/db/dbconnection")
-const port = process.env.PORT || 5001//reached to port inside of the env file, dotenv tanımlamasıyla oldu bu, dotenv yapmadığımızda 5001 e gidiyodu
+const port = process.env.PORT || 5002
 const router = require("./src/routers")
 const errorHandlerMiddleware = require("./src/middlewares/errorHandler")
 const cors = require("cors")

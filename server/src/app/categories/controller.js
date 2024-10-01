@@ -17,14 +17,15 @@ const createCategory = async (req, res) => {
       return new Response(data, "category added successfuly").created(res);
     })
     .catch((err) => {
+      console.log(err);
       throw new APIError("category couldn't add", 400);
     });
 };
 
 const deleteCategory = async (req, res) => {
-    const {id} = req.body;
+    const { id } = req.params;
     
-    const categoryCheck = await category.findOne({id});
+    const categoryCheck = await category.findById(id);
 
     if(!categoryCheck) throw new APIError('category with that id can not be found', 404);
 
@@ -41,21 +42,36 @@ const deleteCategory = async (req, res) => {
 
 const getCategoriesWithSubcategories = async (req, res) => {
   try {
-    const categories = await category.find({ parentId: null });
+    const getSubcategories = async (parentId) => {
+      const subcategories = await category.find({ parentId });
+      
+      return await Promise.all(
+        subcategories.map(async (subcategory) => {
+          const childSubcategories = await getSubcategories(subcategory._id);
+
+          return {
+            ...subcategory.toObject(),
+            subcategories: childSubcategories,
+          };
+        })
+      );
+    };
+
+    const rootCategories = await category.find({ parentId: null });
 
     const populatedCategories = await Promise.all(
-      categories.map(async (cat) => {
-        const subcategories = await category.find({ parentId: cat._id });
+      rootCategories.map(async (rootCat) => {
+        const subcategories = await getSubcategories(rootCat._id);
         return {
-          ...cat.toObject(),
+          ...rootCat.toObject(),
           subcategories,
         };
       })
     );
 
-    return new Response(populatedCategories, 'root and subcategories fetched successfuly').success(res);
+    return new Response(populatedCategories, 'Root and nested subcategories fetched successfully').success(res);
   } catch (err) {
-    throw new APIError('an error occured while fetching categories', 500);
+    throw new APIError('An error occurred while fetching categories', 500);
   }
 };
 
