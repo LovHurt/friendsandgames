@@ -7,11 +7,14 @@ const Response = require("../utils/response")
 const auth = require("../app/auth/router")
 const user = require("../app/users/router")
 const category = require('../app/categories/router')
+const platform = require("../app/platforms/router")
+const platformOfGame = require("../app/platformOfGames/model")
 
 router.use(auth)
 router.use(user)
 
 router.use(category)
-
+router.use(platform)
+router.use(platformOfGame)
 
 module.exports = router
